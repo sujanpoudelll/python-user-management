@@ -6,6 +6,7 @@ Beginner-level CLI project written in Python.
 - Add users
 - View users
 - Search users
+- Update Users
 - Input validation
 - File handling
 

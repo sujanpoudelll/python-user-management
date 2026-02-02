@@ -35,6 +35,9 @@ def add_users():
     except Exception as error:
         print(f"Error while adding user:", error)   
 
+
+
+
 def view_users():
     """Read and display all users from the file."""
     try:
@@ -46,10 +49,6 @@ def view_users():
             print("No users found.")
             return
 
-       
-
-
-       
         print("\n**********USER DETAILS**********")
         count = 1
         for data in users:
@@ -60,6 +59,9 @@ def view_users():
 
     except FileNotFoundError:
         print("No users or file found yet! Please add.")
+
+
+
 
 def load_users():
     """Load all users from the file."""
@@ -84,6 +86,8 @@ def load_users():
     
     return users
 
+
+
 def search_users():
     """Load and display specific users by using name or email."""
 
@@ -106,6 +110,8 @@ def search_users():
     if not found:
         print("No Matched User Found !")
 
+
+
 def update_users():
     """Load and update users data and store ."""
     users = load_users()
@@ -113,9 +119,6 @@ def update_users():
     if not users:
         print("No users found.")
         return
-
-
-    
 
     keyword = input("Enter name or email to update: ").lower().strip()
     updated = False
@@ -175,6 +178,51 @@ def update_users():
 
 
 
+def delete_users():
+    """Delete users data."""
+    users = load_users()
+
+    if not users:
+        print("No users found.")
+        return
+    
+    keyword = input("Enter name or email to delete: ").lower().strip()
+    deleted = False
+    for user in users:
+        if keyword in user["name"].lower() or keyword in user["email"].lower():
+            print("USER FOUND !\n")
+            print(f"Name: {user['name']} \n")
+            print(f"Email: {user['email']} \n")
+            print(f"Age: {user['age']} \n")
+
+            while True:
+                confirm = input("Are you sure you want to delete this user? (y/n): ").lower()
+                if confirm == "y":
+                    users.remove(user)
+                    print("User deleted successfully !")
+                    deleted = True
+                    break
+                if confirm == "n":
+                    print("User deletion cancelled !")
+                    break
+                else:
+                    print("Invalid entry ! Please enter 'y' or 'n'.")
+             
+
+  
+                
+    if deleted:    
+        with open("user_management.txt","w") as file:
+            for user in users:
+                file.write(f"{user['name']}:{user['email']}:{user['age']}\n")
+    else:
+        print("No matching user found !")
+
+
+
+        
+        
+
 
 def main_menu():       
 
@@ -188,9 +236,10 @@ def main_menu():
             print("2. VIEW USERS")
             print("3. SEARCH USER")
             print("4. UPDATE USER")
-            print("5. EXIT")
+            print("5. DELETE USER")
+            print("6. EXIT")
             
-            option = int(input("Select an option (1, 2, 3, 4, 5): "))
+            option = int(input("Select an option (1, 2, 3, 4, 5, 6): "))
 
             if option == 1:
                 add_users()
@@ -203,13 +252,16 @@ def main_menu():
             
             elif option == 4:
                 update_users()
-                
+
             elif option == 5:
+                delete_users()
+                
+            elif option == 6:
                 print("\nThank You !")
                 break
                 
             else:
-                print("Invalid option. Please choose 1, 2, 3, 4, or 5.")
+                print("Invalid option. Please choose 1, 2, 3, 4, 5, or 6.")
         except ValueError:
             print("Please enter a valid integer.")
         except Exception as e:

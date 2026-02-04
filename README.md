@@ -1,25 +1,24 @@
 ## Python User Management System
 
-Beginner-level CLI project written in Python.
+A beginner-level Python project focused on file handling, data validation, and a menu-driven interface. Users are stored in a JSON file (users.json) with unique IDs, and you can add, view, search, update, and delete users.
 
 ### Features
-- Add users with name, email, and age  
-- View all users  
-- Search users by name or email  
-- Update user information  
-- Delete users  
-- Input validation (age, empty fields, confirmations)  
-- File-based storage (`user_management.txt`)  
-- Handles empty files gracefully  
+- Add users with unique ID, name, email, and age
+- View all users with formatted display
+- Search users by name or email
+- Update user details (name, email, age)
+- Delete users
+- Input validation (e.g., age must be an integer ≥18)
+- Persistent storage using users.json
+
 
 
 
 ### Purpose
-This project was created during my Python learning journey to practice **real-world programming concepts**, including:
-
-- File handling  
-- Input validation  
-- Menu-driven CLI  
-- CRUD operations (Create, Read, Update, Delete)  
-- Writing reusable helper functions  
+This project was created during my Python learning journey to practice real-world programming concepts, including:
+- File handling with JSON
+- Input validation (e.g., age ≥ 18)
+- Menu-driven CLI
+- CRUD operations (Create, Read, Update, Delete)
+- Writing reusable helper functions
 

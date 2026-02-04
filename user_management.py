@@ -2,7 +2,9 @@
 # Focus: file handling, validation, menu-driven program
 # Written during early learning stage
 
-
+import json
+import os
+import uuid
 
 def get_valid_age(allow_blank = False, current_age = None):
     while True:   
@@ -11,6 +13,7 @@ def get_valid_age(allow_blank = False, current_age = None):
 
                     if allow_blank and age_input =="":
                         return current_age
+                    
                     age = int(age_input)
 
                     if age <= 0:
@@ -25,83 +28,79 @@ def get_valid_age(allow_blank = False, current_age = None):
                 except ValueError:
                     print("Age should be an integer !")
 
+def load_users():
+    
+    if not os.path.exists("users.json"):
+        return []
+    
+    with open("users.json","r") as file:
+        try:
+            users = json.load(file)
+        except json.JSONDecodeError:
+            users = []
+    return users
+
 def save_users(users):
-    with open("user_management.txt","w") as file:
-            for user in users:
-                file.write(f"{user['name']}:{user['email']}:{user['age']}\n")
+
+    """Save users list to users.json file."""
+    with open("users.json","w") as file:
+        json.dump(users, file, indent=4)
 
 def add_users():
-    """Add a new user to the file with validation."""
-    try:
-        with open("user_management.txt","a") as file:
-            name = input("Enter name: ")
-            email = input("Enter email: ")
+  
+    """Add a new user with unique ID."""
+    users = load_users()
+    
+    name = input("Enter name: ").strip()
+    email = input("Enter email: ").strip()
 
-            if not name or not email:
-                print("Name and email cannot be empty!")
-                return
-            
-            age = get_valid_age()
+    if not name or not email:
+        print("Name and email cannot be empty!")
+        return
+    
+    age = get_valid_age()
 
-            file.write(f"{name}:{email}:{age}\n")
-            print("User added successfully!")
-            
-    except Exception as error:
-        print(f"Error while adding user:", error)   
+    user_id = str(uuid.uuid4())
+
+    users.append({
+        "id":user_id,
+        "name":name,
+        "email":email,
+        "age":age   
+    })
+
+    save_users(users)
+    print(f"User added successfully ! ID: {user_id}")
 
 def view_users():
     """Read and display all users from the file."""
-    try:
-        with open("user_management.txt","r") as file:
-            users = file.readlines()
-        
-        if not users:
-            print("No users found.")
-            return
-
-        print("\n**********USER DETAILS**********")
-        count = 1
-        for data in users:
-
-            name, email, age = data.strip().split(":")
-            print(f"{count}.\nName: {name}\nEmail: {email}\nAge: {age}\n")
-            count += 1
-
-    except FileNotFoundError:
-        print("No users or file found yet! Please add.")
-
-def load_users():
-    """Load all users from the file."""
-    users = []
-    try:
-        with open("user_management.txt","r") as file:
-            for line in file:
-                parts = line.strip().split(":")
-                if len(parts) != 3:
-                    continue
-
-                name, email, age = parts
-                users.append({
-                    "name":name,
-                    "email":email,
-                    "age":int(age),
-
-                })
-
-    except FileNotFoundError:
-        print("File Not Found !")
     
-    return users
+
+    users = load_users()
+    if not users:
+        print("No users found.")
+        return
+    print("\n**********USER DETAILS**********")
+    count = 1
+    for user in users:
+    
+        print(f"""{count}.\n
+        ID    : {user['id']}\n
+        Name  : {user['name']}\n
+        Email : {user['email']}\n
+        Age   : {user['age']}\n """)
+        count += 1
 
 def search_users():
     """Search user by name or email."""
 
-    users = load_users()
 
+    users = load_users()
     if not users:
         print("No users found.")
         return
 
+    
     found = False
     keyword = input("Enter name or email to search: ").lower().strip()
     if not keyword:
@@ -110,6 +109,7 @@ def search_users():
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower():
             print("\nUSER FOUND !\n")
+            print(f"ID: {user['id']} \n")
             print(f"Name: {user['name']} \n")
             print(f"Email: {user['email']} \n")
             print(f"Age: {user['age']} \n")
@@ -120,12 +120,11 @@ def search_users():
 
 def update_users():
     """Update users data and store ."""
+   
     users = load_users()
-
     if not users:
         print("No users found.")
         return
-
     keyword = input("Enter name or email to update: ").lower().strip()
     if not keyword:
         print("Please enter a valid name or email!")
@@ -135,6 +134,7 @@ def update_users():
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower():
             print("USER FOUND !\n")
+            print(f"ID: {user['id']} \n")
             print(f"Current Name: {user['name']} \n")
             print(f"Current Email: {user['email']} \n")
             print(f"Current Age: {user['age']} \n")
@@ -153,14 +153,13 @@ def update_users():
             print("User updated successfully!")
             updated = True
             break
-
-    if not updated:
+    if not updated:                
         print("No matching user found !")
-               
+             
 def delete_users():
     """Delete a user."""
+   
     users = load_users()
-
     if not users:
         print("No users found.")
         return
@@ -172,6 +171,7 @@ def delete_users():
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower():
             print("USER FOUND !\n")
+            print(f"ID: {user['id']}\n")
             print(f"Name: {user['name']} \n")
             print(f"Email: {user['email']} \n")
             print(f"Age: {user['age']} \n")

@@ -80,15 +80,18 @@ def view_users():
     if not users:
         print("No users found.")
         return
-    print("\n**********USER DETAILS**********")
+    print("\n=============== USER LIST ==================\n")
+  
     count = 1
     for user in users:
-    
-        print(f"""{count}.\n
-        ID    : {user['id']}\n
-        Name  : {user['name']}\n
-        Email : {user['email']}\n
-        Age   : {user['age']}\n """)
+        
+        print("-" * 44)
+        print(f"{count}. User Details\n")
+        print(f"ID    : {user['id']}")
+        print(f"Name  : {user['name']}")
+        print(f"Email : {user['email']}")
+        print(f"Age   : {user['age']}")
+        print("-" * 44,"\n")
         count += 1
 
 def search_users():
@@ -108,11 +111,13 @@ def search_users():
         return
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower():
-            print("\nUSER FOUND !\n")
+            print("\n=============== USER FOUND =================\n")
+            print("-" * 44)
             print(f"ID: {user['id']} \n")
             print(f"Name: {user['name']} \n")
             print(f"Email: {user['email']} \n")
             print(f"Age: {user['age']} \n")
+            print("-" * 44,"\n")
             found = True
 
     if not found:
@@ -133,11 +138,13 @@ def update_users():
     updated = False
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower():
-            print("USER FOUND !\n")
+            print("\n=============== USER FOUND =================\n")
+            print("-" * 44)
             print(f"ID: {user['id']} \n")
             print(f"Current Name: {user['name']} \n")
             print(f"Current Email: {user['email']} \n")
             print(f"Current Age: {user['age']} \n")
+            print("-" * 44,"\n")
             
             new_name = input("Enter new name (leave blank to keep same): ")
             new_email = input("Enter new email (leave blank to keep same): ")
@@ -170,11 +177,13 @@ def delete_users():
         return
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower():
-            print("USER FOUND !\n")
+            print("\n=============== USER FOUND =================\n")
+            print("-" * 44,"\n")
             print(f"ID: {user['id']}\n")
             print(f"Name: {user['name']} \n")
             print(f"Email: {user['email']} \n")
             print(f"Age: {user['age']} \n")
+            print("-" * 44,"\n")
 
             while True:
                 confirm = input("Are you sure you want to delete this user? (y/n): ").lower()

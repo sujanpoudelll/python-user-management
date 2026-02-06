@@ -11,9 +11,6 @@ A beginner-level Python project focused on file handling, data validation, and a
 - Input validation (e.g., age must be an integer ≥18)
 - Persistent storage using users.json
 
-
-
-
 ### Purpose
 This project was created during my Python learning journey to practice real-world programming concepts, including:
 - File handling with JSON
@@ -22,3 +19,7 @@ This project was created during my Python learning journey to practice real-worl
 - CRUD operations (Create, Read, Update, Delete)
 - Writing reusable helper functions
 
+***Updates in this version
+- Improved Command-Line Interface (CLI) for better readability
+- Users are now automatically sorted by name when displayed
+- Added email duplication check when adding or updating a user

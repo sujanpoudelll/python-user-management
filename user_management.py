@@ -36,6 +36,7 @@ def load_users():
     with open("users.json","r") as file:
         try:
             users = json.load(file)
+            users.sort(key=lambda u: u["name"].lower())
         except json.JSONDecodeError:
             users = []
     return users
@@ -46,17 +47,35 @@ def save_users(users):
     with open("users.json","w") as file:
         json.dump(users, file, indent=4)
 
+def email_exists(users, email):
+    for user in users:
+        if user["email"].lower() == email.lower():
+            return True
+    return False
+
 def add_users():
   
     """Add a new user with unique ID."""
     users = load_users()
-    
-    name = input("Enter name: ").strip()
-    email = input("Enter email: ").strip()
+    while True:
+        name = input("Enter name: ").strip()
+        if not name:
+            print("Name cannot be empty!")
+        else:
+            break
+        
+    while True:
+        email = input("Enter email: ").strip()
+        if not email:
+            print("Email cannot be empty!")
+        
+        elif email_exists(users, email):
+            print("Email already exists ! Try another !")
+            
+        else:
+            break
 
-    if not name or not email:
-        print("Name and email cannot be empty!")
-        return
+    
     
     age = get_valid_age()
 
@@ -83,6 +102,7 @@ def view_users():
     print("\n=============== USER LIST ==================\n")
   
     count = 1
+    
     for user in users:
         
         print("-" * 44)
@@ -131,6 +151,8 @@ def update_users():
         print("No users found.")
         return
     keyword = input("Enter name or email to update: ").lower().strip()
+
+
     if not keyword:
         print("Please enter a valid name or email!")
         return
@@ -148,6 +170,9 @@ def update_users():
             
             new_name = input("Enter new name (leave blank to keep same): ")
             new_email = input("Enter new email (leave blank to keep same): ")
+            if new_email and email_exists(users, new_email):
+                print("Email already exists ! Update Cancelled!")
+                return
             new_age = get_valid_age(allow_blank=True, current_age=user["age"])
             
             if new_name:

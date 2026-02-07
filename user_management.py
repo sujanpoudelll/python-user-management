@@ -68,7 +68,11 @@ def add_users():
         email = input("Enter email: ").strip()
         if not email:
             print("Email cannot be empty!")
-        
+        elif "@" not in email or "." not in email:
+            print("Invalid email format !")
+        elif " " in email:
+            print("No space allowed !")
+
         elif email_exists(users, email):
             print("Email already exists ! Try another !")
             
@@ -171,8 +175,14 @@ def update_users():
             new_name = input("Enter new name (leave blank to keep same): ")
             new_email = input("Enter new email (leave blank to keep same): ")
             if new_email and email_exists(users, new_email):
-                print("Email already exists ! Update Cancelled!")
-                return
+                print("Email already exists ! Try another !")
+            elif "@" not in new_email or "." not in new_email:
+                print("Invalid email format !")
+            elif " " in new_email:
+                print("No space allowed !")
+            else:
+                break
+
             new_age = get_valid_age(allow_blank=True, current_age=user["age"])
             
             if new_name:
@@ -284,6 +294,37 @@ def main_menu():
 main_menu()
 
 
+def mul_users():
+    users = load_users()
+    if not users:
+        print("No users found.")
+        return
+    keyword = input("Enter name or email to update: ").lower().strip()
+
+    if not keyword:
+        print("Please enter a valid name or email!")
+        return
+    
+    mul_user = []
+
+    for user in users:
+        if keyword in user["name"].lower() or keyword in user["email"].lower():
+            
+            mul_user.append({
+                    "id":user_id,
+                    "name":name,
+                    "email":email,
+                    "age":age   
+                })
+    print("\n=============== USER FOUND =================\n")
+    for userfound in mul_users:
+        
+        print("-" * 44)
+        print(f"ID: {user['id']} \n")
+        print(f"Current Name: {user['name']} \n")
+        print(f"Current Email: {user['email']} \n")
+        print(f"Current Age: {user['age']} \n")
+        print("-" * 44,"\n")
 
 
 

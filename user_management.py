@@ -8,6 +8,25 @@ import uuid
 
 #------------Helper Functions--------------------
 
+def load_users():
+    
+    if not os.path.exists("users.json"):
+        return []
+    
+    with open("users.json","r") as file:
+        try:
+            users = json.load(file)
+            users.sort(key=lambda u: u["name"].lower())
+        except json.JSONDecodeError:
+            users = []
+    return users
+
+def save_users(users):
+
+    """Save users list to users.json file."""
+    with open("users.json","w") as file:
+        json.dump(users, file, indent=4)
+
 def get_valid_age(allow_blank = False, current_age = None):
     while True:   
                 try:
@@ -30,25 +49,6 @@ def get_valid_age(allow_blank = False, current_age = None):
                 except ValueError:
                     print("Age should be an integer !")
 
-def load_users():
-    
-    if not os.path.exists("users.json"):
-        return []
-    
-    with open("users.json","r") as file:
-        try:
-            users = json.load(file)
-            users.sort(key=lambda u: u["name"].lower())
-        except json.JSONDecodeError:
-            users = []
-    return users
-
-def save_users(users):
-
-    """Save users list to users.json file."""
-    with open("users.json","w") as file:
-        json.dump(users, file, indent=4)
-
 def email_exists(users, email):
     for user in users:
         if user["email"].lower() == email.lower():
@@ -58,8 +58,8 @@ def email_exists(users, email):
 #--------------Core Functions--------------------
 
 def add_users():
-  
     """Add a new user with unique ID."""
+
     users = load_users()
     while True:
         name = input("Enter name: ").strip()
@@ -67,7 +67,7 @@ def add_users():
             print("Name cannot be empty!")
         else:
             break
-        
+
     while True:
         email = input("Enter email: ").strip()
         if not email:
@@ -78,41 +78,32 @@ def add_users():
             print("No space allowed !")
 
         elif email_exists(users, email):
-            print("Email already exists ! Try another !")
-            
+            print("Email already exists ! Try another !")   
         else:
             break
 
-    
-    
     age = get_valid_age()
-
     user_id = str(uuid.uuid4())
-
     users.append({
         "id":user_id,
         "name":name,
         "email":email,
         "age":age   
     })
-
     save_users(users)
     print(f"User added successfully ! ID: {user_id}")
 
 def view_users():
     """Read and display all users from the file."""
-    
 
     users = load_users()
     if not users:
         print("No users found.")
         return
-    print("\n=============== USER LIST ==================\n")
-  
-    count = 1
     
-    for user in users:
-        
+    print("\n=============== USER LIST ==================\n")
+    count = 1
+    for user in users:  
         print("-" * 44)
         print(f"{count}. User Details\n")
         print(f"ID    : {user['id']}")
@@ -125,205 +116,165 @@ def view_users():
 def search_users():
     """Search user by name or email."""
 
-
     users = load_users()
     if not users:
         print("No users found.")
         return
 
-    
-    found = False
     keyword = input("Enter name or email to search: ").lower().strip()
     if not keyword:
         print("Please enter a valid name or email!")
         return
+    
+    searched_user = []
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower():
-            print("\n=============== USER FOUND =================\n")
-            print("-" * 44)
-            print(f"ID: {user['id']} \n")
-            print(f"Name: {user['name']} \n")
-            print(f"Email: {user['email']} \n")
-            print(f"Age: {user['age']} \n")
-            print("-" * 44,"\n")
-            found = True
-
-    if not found:
-        print("No Matched User Found !")
-
-def spare():
-    """Update users data and store ."""
-    
-    users = load_users()
-    if not users:
-        print("No users found.")
-        return
-    keyword = input("Enter name or email to update: ").lower().strip()
-
-
-    if not keyword:
-        print("Please enter a valid name or email!")
-        return
-    
-    updated = False
-    for user in users:
-        if keyword in user["name"].lower() or keyword in user["email"].lower():
-            print("\n=============== USER FOUND =================\n")
-            print("-" * 44)
-            print(f"ID: {user['id']} \n")
-            print(f"Current Name: {user['name']} \n")
-            print(f"Current Email: {user['email']} \n")
-            print(f"Current Age: {user['age']} \n")
-            print("-" * 44,"\n")
-            
-            new_name = input("Enter new name (leave blank to keep same): ")
-            new_email = input("Enter new email (leave blank to keep same): ")
-            if new_email and email_exists(users, new_email):
-                print("Email already exists ! Try another !")
-            elif "@" not in new_email or "." not in new_email:
-                print("Invalid email format !")
-            elif " " in new_email:
-                print("No space allowed !")
-            else:
-                break
-
-            new_age = get_valid_age(allow_blank=True, current_age=user["age"])
-            
-            if new_name:
-                user["name"] = new_name
-            if new_email: 
-                user["email"] = new_email
-            user["age"]= new_age
-
-            save_users(users)
-            print("User updated successfully!")
-            updated = True
-            break
-    if not updated:                
-        print("No matching user found !")
-
-def mul_users():
-    users = load_users()
-    if not users:
-        print("No users found.")
-        return
-    keyword = input("Enter name or email to update: ").lower().strip()
-    if not keyword:
-        print("Please enter a valid name or email!")
-        return
-    
-    mul_user = []
-
-    for user in users:
-        if keyword in user["name"].lower() or keyword in user["email"].lower():
-            
-            mul_user.append(user)
-                    
-      
-    if mul_user:
-
-        print("\n=============== USER FOUND =================\n")
+            searched_user.append(user)                
+    if searched_user:
+        print(f"\n=============== {len(searched_user)} USER(S) FOUND =================\n")
         count = 1
-        for userfound in mul_user:
-            
+        for userfound in searched_user:
             print("-" * 44)
             print(f"{count}.\n")
-            print(f"ID: {userfound['id']} \n")
-            print(f"Current Name: {userfound['name']} \n")
-            print(f"Current Email: {userfound['email']} \n")
-            print(f"Current Age: {userfound['age']} \n")
+            print(f"ID: {userfound['id']} ")
+            print(f"Name: {userfound['name']}")
+            print(f"Email: {userfound['email']}")
+            print(f"Age: {userfound['age']}")
             print("-" * 44,"\n")
             count += 1
+    else:
+        print("No Matched User Found !")
 
-        while True:
-            try:
+def update_users():
+    """Updates user by name or email."""
+
+    users = load_users()
+    if not users:
+        print("No users found.")
+        return
+    
+    keyword = input("Enter name or email to update: ").lower().strip()
+    if not keyword:
+        print("Please enter a valid name or email!")
+        return
+    
+    updating_user = []
+    for user in users:
+        if keyword in user["name"].lower() or keyword in user["email"].lower(): 
+            updating_user.append(user)
                     
-                choice = int(input("Enter the no. of user you want to update: "))
-                if not (1<=choice<=len(mul_user)):
-                    print("Invalid Selection. Operation Cancelled !")
-                    return
-            
-                selected_user = mul_user[choice -1]
-                break
-            except ValueError:
-                print("Please enter a valid number!")
-                
-                    
-
-
-        new_name = input("Enter new name (leave blank to keep same): ")
+    if updating_user:
+        print(f"\n=============== {len(updating_user)} USER(S) FOUND =================\n")
+        count = 1
+        for userfound in updating_user: 
+            print("-" * 44)
+            print(f"{count}.\n")
+            print(f"ID: {userfound['id']}")
+            print(f"Current Name: {userfound['name']}")
+            print(f"Current Email: {userfound['email']}")
+            print(f"Current Age: {userfound['age']}")
+            print("-" * 44,"\n")
+            count += 1
+        
+        if len(updating_user) !=1:  
+            while True:
+                try:    
+                        choice = int(input("Enter the no. of user you want to update: "))
+                        if not (1<=choice<=len(updating_user)):
+                            print("Invalid Selection. Operation Cancelled !")
+                            return
+                        selected_user = updating_user[choice -1]
+                        break     
+                except ValueError:
+                    print("Please enter a valid number!")
+        else:
+            selected_user = updating_user[0]
+                   
+        new_name = input("Enter new name (leave blank to keep same): ").strip()
         if new_name:
             selected_user["name"] = new_name
         while True:
             new_email = input("Enter new email (leave blank to keep same): ")
             if not new_email:
-                selected_user["email"] = selected_user["email"]
-
                 break
-            if new_email and email_exists(users, new_email):
-                print("Email already exists ! Try another !")
-                continue
+            if " " in new_email:
+                print("No space allowed !")
+                continue 
             if "@" not in new_email or "." not in new_email:
                 print("Invalid email format ! e.g: coderguy@something.com")
                 continue
-            if " " in new_email:
-                print("No space allowed !")
+            if new_email and email_exists(users, new_email):
+                print("Email already exists ! Try another !")
                 continue
             else:
+                selected_user["email"] = new_email 
                 break
-                
-        selected_user["email"] = new_email 
-
         new_age = get_valid_age(allow_blank=True, current_age=selected_user["age"])
         selected_user["age"]= new_age
         save_users(users)
         print("User updated successfully!")
-        return
-       
-        
-        
+        return   
     else:               
         print("No matching user found !")
      
 def delete_users():
     """Delete a user."""
-   
+
     users = load_users()
     if not users:
         print("No users found.")
         return
-    found = False
+    
     keyword = input("Enter name or email to delete: ").lower().strip()
     if not keyword:
         print("Please enter a valid name or email!")
         return
+    
+    deleting_user = []
     for user in users:
-        if keyword in user["name"].lower() or keyword in user["email"].lower():
-            print("\n=============== USER FOUND =================\n")
-            print("-" * 44,"\n")
-            print(f"ID: {user['id']}\n")
-            print(f"Name: {user['name']} \n")
-            print(f"Email: {user['email']} \n")
-            print(f"Age: {user['age']} \n")
-            print("-" * 44,"\n")
+        if keyword in user["name"].lower() or keyword in user["email"].lower(): 
+            deleting_user.append(user)
 
+    if deleting_user:
+        print("\n=============== USER FOUND =================\n")
+        count = 1
+        for userfound in deleting_user: 
+            print("-" * 44)
+            print(f"{count}.\n")
+            print(f"ID: {userfound['id']}")
+            print(f"Name: {userfound['name']}")
+            print(f"Email: {userfound['email']}")
+            print(f"Age: {userfound['age']}")
+            print("-" * 44,"\n")
+            count += 1
+        
+        if len(deleting_user) !=1:  
             while True:
+                try:    
+                        choice = int(input("Enter the no. of user you want to delete: "))
+                        if not (1<=choice<=len(deleting_user)):
+                            print("Invalid Selection. Operation Cancelled !")
+                            return
+                        selected_user = deleting_user[choice -1]
+                        break     
+                except ValueError:
+                    print("Please enter a valid number!")
+        else:
+            selected_user = deleting_user[0]
+
+        while True:
                 confirm = input("Are you sure you want to delete this user? (y/n): ").lower()
                 if confirm == "y":
-                    users.remove(user)
+                    users.remove(selected_user)
                     save_users(users)
                     print("User deleted successfully !")
-                    break
-                    
+                    break   
                 elif confirm == "n":
                     print("User deletion cancelled !")
                     break
                 else:
-                    print("Invalid entry ! Please enter 'y' or 'n'.")
-            found = True
-            
-
-    if not found:                
+                    print("Invalid entry ! Please enter 'y' or 'n'.")       
+    else:                
         print("No matching user found !")
 
 def main_menu():       
@@ -332,7 +283,6 @@ def main_menu():
 
     while True:
         try:
-            
             print("#######USER MANAGEMENT SYSTEM########")
             print("1. ADD USERS")
             print("2. VIEW USERS")
@@ -340,25 +290,18 @@ def main_menu():
             print("4. UPDATE USER")
             print("5. DELETE USER")
             print("6. EXIT")
-            
-            option = int(input("Select an option (1-6): "))
 
+            option = int(input("Select an option (1-6): "))
             if option == 1:
-                add_users()
-                
+                add_users()    
             elif option == 2:
                 view_users()
-            
             elif option == 3:
                 search_users()
-            
             elif option == 4:
-                #update_users()
-                mul_users()
-
+                update_users()   
             elif option == 5:
-                delete_users()
-                
+                delete_users()    
             elif option == 6:
                 while True:
                     exit_confirm = input("Are you sure you want to exit? (y/n): ").lower()
@@ -368,9 +311,7 @@ def main_menu():
                     elif exit_confirm =="n":
                         break
                     else:
-                        print("Invalid entry ! Please enter 'y' or 'n'.")
-            
-                
+                        print("Invalid entry ! Please enter 'y' or 'n'.") 
             else:
                 print("Invalid option. Please choose 1, 2, 3, 4, 5, or 6.")
         except ValueError:
@@ -380,13 +321,4 @@ def main_menu():
 
 #--------------Main Menu----------------------
 main_menu()
-
-
-
-
-    
-
-
-
-
 

@@ -7,19 +7,24 @@ A beginner-level Python project focused on file handling, data validation, and a
 - View all users with formatted display
 - Search users by name or email
 - Update user details (name, email, age)
-- Delete users
+- Delete users with confirmation
 - Input validation (e.g., age must be an integer ≥18)
 - Persistent storage using users.json
 
 ### Purpose
 This project was created during my Python learning journey to practice real-world programming concepts, including:
 - File handling with JSON
-- Input validation (e.g., age ≥ 18)
+- Input validation
 - Menu-driven CLI
 - CRUD operations (Create, Read, Update, Delete)
 - Writing reusable helper functions
 
-***Updates in this version
+### Updates in this version
 - Improved Command-Line Interface (CLI) for better readability
 - Users are now automatically sorted by name when displayed
 - Added email duplication check when adding or updating a user
+
+### Author
+***Sujan Poudel***
+Bachelor’s in Software Engineering
+Beginner Python Developer

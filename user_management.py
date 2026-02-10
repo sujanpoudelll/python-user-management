@@ -6,34 +6,112 @@ import json
 import os
 import uuid
 
+
+#-------------Logging----------------------------
+
+def log(message):
+    print(f"[LOG] {message}")
+
+def log_error(message):
+    print(f"[ERROR] {message}")
+
 #------------Helper Functions--------------------
 
 def load_users():
     """Loads users from the file"""
-    
-    if not os.path.exists("users.json"):
+    try:
+        if not os.path.exists("users.json"):
+            log("load_users():users.json not found, returning empty list")
+            return []
+        
+        with open("users.json","r") as file:
+            try:
+                users = json.load(file)
+                users.sort(key=lambda u: u["name"].lower())
+                return users
+            except json.JSONDecodeError:
+                log_error("load_users():users.json is corrupted")
+                users = []
+        return users
+    except Exception as e:
+        log_error(f"load_users(): {e}")
         return []
     
-    with open("users.json","r") as file:
-        try:
-            users = json.load(file)
-            users.sort(key=lambda u: u["name"].lower())
-        except json.JSONDecodeError:
-            users = []
-    return users
+def save_users(users):
+
+    """Save users list to users.json file."""
+    try:
+        with open("users.json","w") as file:
+            json.dump(users, file, indent=4)
+    except Exception as e:
+        log_error(f"save_users(): {e}")
+
+def email_exists(users, email):
+    """Checks if email exists already or not"""
+    for user in users:
+        if user["email"].lower() == email.lower():
+            return True
+    return False        
+
+def get_valid_age(allow_blank = False, current_age = None):
+    """Validates the age entered"""
+    while True:   
+                try:
+                    age_input = input("Enter age: ").strip()
+
+                    if allow_blank and age_input =="":
+                        return current_age
+                    
+                    age = int(age_input)
+                    if age <= 0:
+                        print("Age can't be negative or zero !")
+                    elif age < 18:
+                        print("Age must be atleast 18 !")
+                        
+                    else:
+                        return age
+                        
+                except ValueError:
+                    print("Age should be a number !")
+
+def get_valid_email(users,selected_user=None,allow_blank = False, current_email = None):
+    """Validates email"""
+    while True:
+            email_input = input("Enter email: ").strip()
+            if allow_blank and email_input =="":
+                return current_email
+            if not email_input:
+                print("Email cannot be empty")
+                continue
+            if " " in email_input:
+                print("No space allowed !")
+                continue 
+            if "@" not in email_input or "." not in email_input:
+                print("Invalid email format ! e.g: coderguy@something.com")
+                continue
+
+            if selected_user is None:
+                if email_exists(users,email_input):
+                    print("Email already exists ! Try another !")
+                    continue
+            else:
+                if email_exists(users, email_input) and email_input != selected_user["email"]:
+                    print("Email already exists ! Try  new one or leave blank for old  !")
+                    continue
+
+            return email_input.lower()
 
 def input_display(users,action):
     """Search user by keyword and display matched results"""
-
+    
     if not users:
-        print("No users found.")
         return None
 
     keyword = input(f"Enter name or email to {action}: ").lower().strip()
     if not keyword:
         print("Please enter a valid name or email!")
         return None
-    
+
     matched_user = []
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower(): 
@@ -56,27 +134,33 @@ def input_display(users,action):
         return None
 
     return matched_user
-
-def choice_input(output, action):
+    
+def choice_input(output, action): 
     """User selection for operation"""
+    
     if not output:
         return None
+    
     if len(output) !=1:  
             while True:
                 try:    
                     choice = int(input(f"Enter the no. of user you want to {action}: "))
+
                     if not (1<=choice<=len(output)):
                         print("Invalid Selection. Operation Cancelled !")
                         return None
                     selected_user = output[choice -1]
                     return selected_user    
+                
                 except ValueError:
                     print("Please enter a valid number!")
+                    continue
     else:
         return output[0]
-
+        
 def delete_input(users, selected_user):
     """Deletes the selected user"""
+    
     if not selected_user:
         return None
     while True:
@@ -91,10 +175,13 @@ def delete_input(users, selected_user):
                 break
             else:
                 print("Invalid entry ! Please enter 'y' or 'n'.")
+                continue
     
 def update_input(users,selected_user):
     """Updates the selected user"""
+ 
     if not selected_user:
+        print("Operation cancelled.")
         return None
     print("Leave blank to keep same !")
     new_name = input("Enter new name: ").strip()
@@ -106,70 +193,8 @@ def update_input(users,selected_user):
     selected_user["age"]= new_age
     save_users(users)
     print("User updated successfully!")
-    
-def save_users(users):
 
-    """Save users list to users.json file."""
-    with open("users.json","w") as file:
-        json.dump(users, file, indent=4)
-
-def get_valid_age(allow_blank = False, current_age = None):
-    """Validates the age entered"""
-    while True:   
-                try:
-                    age_input = input("Enter age: ").strip()
-
-                    if allow_blank and age_input =="":
-                        return current_age
-                    
-                    age = int(age_input)
-
-                    if age <= 0:
-                        print("Age can't be negative or zero !")
-
-                    elif age < 18:
-                        print("Age need to be atleast 18 !")
-                        
-                    else:
-                        return age
-                        
-                except ValueError:
-                    print("Age should be an integer !")
-
-def get_valid_email(users,selected_user=None,allow_blank = False, current_email = None,):
-    """Validates email"""
-    while True:
-            email_input = input("Enter email: ").strip()
-            if allow_blank and email_input =="":
-                return current_email
-            if not email_input:
-                print("Email cannot be empty")
-                continue
-            if " " in email_input:
-                print("No space allowed !")
-                continue 
-            if "@" not in email_input or "." not in email_input:
-                print("Invalid email format ! e.g: coderguy@something.com")
-                continue
-
-            if selected_user is None:
-                if email_exists(users,email_input):
-                    print("Email already exists ! Try another !")
-                    continue
-            else:
-                if email_exists(users, email_input) and email_input != selected_user["email"]:
-                    print("Email already exists ! Try another !")
-                    continue
-
-            return email_input.lower()
-                
-def email_exists(users, email):
-    """Checks if email exists already or not"""
-    for user in users:
-        if user["email"].lower() == email.lower():
-            return True
-    return False
-
+   
 #--------------Core Functions--------------------
 
 def add_users():
@@ -182,7 +207,7 @@ def add_users():
             print("Name cannot be empty!")
             continue
         break
-    
+
     email = get_valid_email(users)    
     age = get_valid_age()
     user_id = str(uuid.uuid4())
@@ -240,6 +265,7 @@ def delete_users():
     selected_user= choice_input(output, "delete")
     delete_input(users,selected_user)
 
+#--------------Main Menu----------------------
 def main_menu():       
 
     """Main menu loop."""
@@ -275,14 +301,19 @@ def main_menu():
                         break
                     else:
                         print("Invalid entry ! Please enter 'y' or 'n'.") 
+                        log("main_menu(): Invalid option input.")
+                        continue
             else:
                 print("Invalid option. Please choose 1, 2, 3, 4, 5, or 6.")
+                log("main_menu(): Invalid option input.")
+                
         except ValueError:
             print("Please enter a valid integer.")
+            log("main_menu(): Non-numeric menu input")
         except Exception as e:
-            print(f"Error:{e}")
+            print("Something went wrong ! Please Try Again !")
+            log_error(f"main_menu(): {e}")
 
-#--------------Main Menu----------------------
 main_menu()
 
 

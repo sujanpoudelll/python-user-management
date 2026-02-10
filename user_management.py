@@ -9,6 +9,7 @@ import uuid
 #------------Helper Functions--------------------
 
 def load_users():
+    """Loads users from the file"""
     
     if not os.path.exists("users.json"):
         return []
@@ -22,6 +23,7 @@ def load_users():
     return users
 
 def input_display(users,action):
+    """Search user by keyword and display matched results"""
 
     if not users:
         print("No users found.")
@@ -32,15 +34,15 @@ def input_display(users,action):
         print("Please enter a valid name or email!")
         return None
     
-    changing_user = []
+    matched_user = []
     for user in users:
         if keyword in user["name"].lower() or keyword in user["email"].lower(): 
-            changing_user.append(user)
+            matched_user.append(user)
 
-    if changing_user:
-        print("\n=============== USER FOUND =================\n")
+    if matched_user:
+        print(f"\n==============={len(matched_user)} USER/S FOUND =================\n")
         count = 1
-        for userfound in changing_user: 
+        for userfound in matched_user: 
             print("-" * 44)
             print(f"{count}.\n")
             print(f"ID: {userfound['id']}")
@@ -53,9 +55,10 @@ def input_display(users,action):
         print("No Matched User Found !")
         return None
 
-    return changing_user
+    return matched_user
 
 def choice_input(output, action):
+    """User selection for operation"""
     if not output:
         return None
     if len(output) !=1:  
@@ -73,6 +76,7 @@ def choice_input(output, action):
         return output[0]
 
 def delete_input(users, selected_user):
+    """Deletes the selected user"""
     if not selected_user:
         return None
     while True:
@@ -89,6 +93,7 @@ def delete_input(users, selected_user):
                 print("Invalid entry ! Please enter 'y' or 'n'.")
     
 def update_input(users,selected_user):
+    """Updates the selected user"""
     if not selected_user:
         return None
     new_name = input("Enter new name (leave blank to keep same): ").strip()
@@ -98,13 +103,16 @@ def update_input(users,selected_user):
         new_email = input("Enter new email (leave blank to keep same): ")
         if not new_email:
             break
+        if new_email == selected_user["email"]:
+            print("You entered the current email. Leave blank to keep it.")
+            continue
         if " " in new_email:
             print("No space allowed !")
             continue 
         if "@" not in new_email or "." not in new_email:
             print("Invalid email format ! e.g: coderguy@something.com")
             continue
-        if new_email and email_exists(users, new_email):
+        if email_exists(users, new_email):
             print("Email already exists ! Try another !")
             continue
         else:
@@ -123,6 +131,7 @@ def save_users(users):
         json.dump(users, file, indent=4)
 
 def get_valid_age(allow_blank = False, current_age = None):
+    """Validates the age entered"""
     while True:   
                 try:
                     age_input = input("Enter age: ")
@@ -145,6 +154,7 @@ def get_valid_age(allow_blank = False, current_age = None):
                     print("Age should be an integer !")
 
 def email_exists(users, email):
+    """Checks if email exists already or not"""
     for user in users:
         if user["email"].lower() == email.lower():
             return True

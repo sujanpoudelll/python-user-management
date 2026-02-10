@@ -64,12 +64,12 @@ def choice_input(output, action):
     if len(output) !=1:  
             while True:
                 try:    
-                        choice = int(input(f"Enter the no. of user you want to {action}: "))
-                        if not (1<=choice<=len(output)):
-                            print("Invalid Selection. Operation Cancelled !")
-                            return None
-                        selected_user = output[choice -1]
-                        return selected_user    
+                    choice = int(input(f"Enter the no. of user you want to {action}: "))
+                    if not (1<=choice<=len(output)):
+                        print("Invalid Selection. Operation Cancelled !")
+                        return None
+                    selected_user = output[choice -1]
+                    return selected_user    
                 except ValueError:
                     print("Please enter a valid number!")
     else:
@@ -96,34 +96,17 @@ def update_input(users,selected_user):
     """Updates the selected user"""
     if not selected_user:
         return None
-    new_name = input("Enter new name (leave blank to keep same): ").strip()
+    print("Leave blank to keep same !")
+    new_name = input("Enter new name: ").strip()
     if new_name:
         selected_user["name"] = new_name
-    while True:
-        new_email = input("Enter new email (leave blank to keep same): ")
-        if not new_email:
-            break
-        if new_email == selected_user["email"]:
-            print("You entered the current email. Leave blank to keep it.")
-            continue
-        if " " in new_email:
-            print("No space allowed !")
-            continue 
-        if "@" not in new_email or "." not in new_email:
-            print("Invalid email format ! e.g: coderguy@something.com")
-            continue
-        if email_exists(users, new_email):
-            print("Email already exists ! Try another !")
-            continue
-        else:
-            selected_user["email"] = new_email 
-            break
+    new_email = get_valid_email(users,selected_user,allow_blank=True,current_email=selected_user["email"])
+    selected_user["email"]=new_email
     new_age = get_valid_age(allow_blank=True, current_age=selected_user["age"])
     selected_user["age"]= new_age
     save_users(users)
     print("User updated successfully!")
-    return 
-
+    
 def save_users(users):
 
     """Save users list to users.json file."""
@@ -134,7 +117,7 @@ def get_valid_age(allow_blank = False, current_age = None):
     """Validates the age entered"""
     while True:   
                 try:
-                    age_input = input("Enter age: ")
+                    age_input = input("Enter age: ").strip()
 
                     if allow_blank and age_input =="":
                         return current_age
@@ -153,6 +136,33 @@ def get_valid_age(allow_blank = False, current_age = None):
                 except ValueError:
                     print("Age should be an integer !")
 
+def get_valid_email(users,selected_user=None,allow_blank = False, current_email = None,):
+    """Validates email"""
+    while True:
+            email_input = input("Enter email: ").strip()
+            if allow_blank and email_input =="":
+                return current_email
+            if not email_input:
+                print("Email cannot be empty")
+                continue
+            if " " in email_input:
+                print("No space allowed !")
+                continue 
+            if "@" not in email_input or "." not in email_input:
+                print("Invalid email format ! e.g: coderguy@something.com")
+                continue
+
+            if selected_user is None:
+                if email_exists(users,email_input):
+                    print("Email already exists ! Try another !")
+                    continue
+            else:
+                if email_exists(users, email_input) and email_input != selected_user["email"]:
+                    print("Email already exists ! Try another !")
+                    continue
+
+            return email_input.lower()
+                
 def email_exists(users, email):
     """Checks if email exists already or not"""
     for user in users:
@@ -170,25 +180,10 @@ def add_users():
         name = input("Enter name: ").strip()
         if not name:
             print("Name cannot be empty!")
-        else:
-            break
-
-    while True:
-        email = input("Enter email: ").strip()
-        if not email:
-            print("Email cannot be empty!")
-        elif " " in email:
-            print("No space allowed !")
-            continue 
-        elif "@" not in email or "." not in email:
-            print("Invalid email format ! e.g: coderguy@something.com")
             continue
-        elif email and email_exists(users, email):
-            print("Email already exists ! Try another !")
-            continue
-        else:
-            break
-        
+        break
+    
+    email = get_valid_email(users)    
     age = get_valid_age()
     user_id = str(uuid.uuid4())
     users.append({

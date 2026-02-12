@@ -53,26 +53,19 @@ def email_exists(users, email):
             return True
     return False        
 
-def get_valid_age(allow_blank = False, current_age = None):
-    """Validates the age entered"""
-    while True:   
-                try:
-                    age_input = input("Enter age: ").strip()
+def is_valid_age(age):
+    return isinstance(age, int) and age >0
 
-                    if allow_blank and age_input =="":
-                        return current_age
-                    
-                    age = int(age_input)
-                    if age <= 0:
-                        print("Age can't be negative or zero !")
-                    elif age < 18:
-                        print("Age must be atleast 18 !")
-                        
-                    else:
-                        return age
-                        
-                except ValueError:
-                    print("Age should be a number !")
+def input_age():
+    while True:
+        try:
+            age = int(input("Enter age: "))
+            if is_valid_age(age):
+                return age
+            print("Age must be greater than 0 !")
+        except ValueError:
+            print("Enter a number !")
+            continue
 
 def get_valid_email(users,selected_user=None,allow_blank = False, current_email = None):
     """Validates email"""
@@ -189,7 +182,10 @@ def update_input(users,selected_user):
         selected_user["name"] = new_name
     new_email = get_valid_email(users,selected_user,allow_blank=True,current_email=selected_user["email"])
     selected_user["email"]=new_email
-    new_age = get_valid_age(allow_blank=True, current_age=selected_user["age"])
+
+    
+    new_age = input_age()
+    #new_age = get_valid_age(allow_blank=True, current_age=selected_user["age"])
     selected_user["age"]= new_age
     save_users(users)
     print("User updated successfully!")
@@ -209,7 +205,8 @@ def add_users():
         break
 
     email = get_valid_email(users)    
-    age = get_valid_age()
+    #age = get_valid_age()
+    age = input_age()
     user_id = str(uuid.uuid4())
     users.append({
         "id":user_id,
@@ -315,6 +312,8 @@ def main_menu():
             log_error(f"main_menu(): {e}")
 
 main_menu()
+
+
 
 
 

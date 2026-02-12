@@ -185,7 +185,6 @@ def update_input(users,selected_user):
 
     
     new_age = input_age()
-    #new_age = get_valid_age(allow_blank=True, current_age=selected_user["age"])
     selected_user["age"]= new_age
     save_users(users)
     print("User updated successfully!")
@@ -204,8 +203,7 @@ def add_users():
             continue
         break
 
-    email = get_valid_email(users)    
-    #age = get_valid_age()
+    email = get_valid_email(users)  
     age = input_age()
     user_id = str(uuid.uuid4())
     users.append({

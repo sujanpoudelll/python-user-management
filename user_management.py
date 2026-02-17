@@ -27,6 +27,8 @@ def load_users():
         with open("users.json","r") as file:
             try:
                 users = json.load(file)
+                if users is None:
+                    return[]
                 users.sort(key=lambda u: u["name"].lower())
                 return users
             except json.JSONDecodeError:
@@ -37,6 +39,17 @@ def load_users():
         log_error(f"load_users(): {e}")
         return []
     
+def add_users_to_list(users, name, email, age, phone):
+    user= {
+        "id":str(uuid.uuid4()),
+        "name":name,
+        "email":email,
+        "age":age ,
+        "phone":phone
+    }
+    users.append(user)
+    return user
+
 def save_users(users):
 
     """Save users list to users.json file."""
@@ -46,6 +59,21 @@ def save_users(users):
     except Exception as e:
         log_error(f"save_users(): {e}")
 
+def input_name():
+    while True:
+        name = input("Enter name: ").strip()
+        if not name:
+            print("Name cannot be empty!")
+            continue
+        break
+    return name
+
+def input_email(users):
+    return get_valid_email(users) 
+
+def input_phone(users,selected_user=None,allow_blank=False,current_phone=None):
+   return get_valid_phone(users,selected_user,allow_blank,current_phone)
+   
 def email_exists(users, email):
     """Checks if email exists already or not"""
     for user in users:
@@ -53,20 +81,55 @@ def email_exists(users, email):
             return True
     return False        
 
-def is_valid_age(age):
-    return isinstance(age, int) and age >0
+def phone_exists(users, phone):
+    """Checks if phone number exists already or not"""
+    for user in users:
+        if user["phone"] == phone:
+            return True
+    return False
 
-def input_age():
+def get_valid_phone(users, selected_user=None, allow_blank = False, current_phone = None):
     while True:
+            phone = input("Enter phone number: ").strip()
+            if allow_blank and phone=="":
+                return current_phone
+            if not phone:
+                print("Phone number cannot be empty !")
+                continue
+        
+            if not phone.isdigit() or len(phone) != 10:
+                 print("Please enter 10-digits phone number!")
+                 continue
+                
+
+            if selected_user is None:
+                if phone_exists(users, phone):
+                    print("Phone number already exists. Try another !")
+                    continue
+            else:
+                if phone_exists(users,phone) and phone != selected_user["phone"]:
+                    print("Phone number already exists ! Try  new one or leave blank for old  !")
+                    continue
+
+            return phone
+            
+def is_valid_age(age):
+    return isinstance(age, int) and age>=18
+
+def input_age(allow_blank = False,current_age = None):
+    while True:
+        age_input = input("Enter age: ").strip()
+        if allow_blank and age_input=="":
+            return current_age
         try:
-            age = int(input("Enter age: "))
+            age = int(age_input)
             if is_valid_age(age):
                 return age
-            print("Age must be greater than 0 !")
+            print("Age must be positive and greater than 17  !")
+
         except ValueError:
             print("Enter a number !")
-            continue
-
+           
 def get_valid_email(users,selected_user=None,allow_blank = False, current_email = None):
     """Validates email"""
     while True:
@@ -74,7 +137,7 @@ def get_valid_email(users,selected_user=None,allow_blank = False, current_email 
             if allow_blank and email_input =="":
                 return current_email
             if not email_input:
-                print("Email cannot be empty")
+                print("Email cannot be empty!")
                 continue
             if " " in email_input:
                 print("No space allowed !")
@@ -100,14 +163,14 @@ def input_display(users,action):
     if not users:
         return None
 
-    keyword = input(f"Enter name or email to {action}: ").lower().strip()
+    keyword = input(f"Enter name or email or phone number to {action}: ").lower().strip()
     if not keyword:
-        print("Please enter a valid name or email!")
+        print("Please enter a valid name or email or phone number!")
         return None
 
     matched_user = []
     for user in users:
-        if keyword in user["name"].lower() or keyword in user["email"].lower(): 
+        if keyword in user["name"].lower() or keyword in user["email"].lower() or keyword in user["phone"]: 
             matched_user.append(user)
 
     if matched_user:
@@ -120,10 +183,11 @@ def input_display(users,action):
             print(f"Name: {userfound['name']}")
             print(f"Email: {userfound['email']}")
             print(f"Age: {userfound['age']}")
+            print(f"Phone: {userfound['phone']}")
             print("-" * 44,"\n")
             count += 1
     else:
-        print("No Matched User Found !")
+        print("No Matching User Found !")
         return None
 
     return matched_user
@@ -184,8 +248,10 @@ def update_input(users,selected_user):
     selected_user["email"]=new_email
 
     
-    new_age = input_age()
+    new_age = input_age(allow_blank = True,current_age = selected_user["age"])
     selected_user["age"]= new_age
+    new_phone = input_phone(users,selected_user,allow_blank=True, current_phone= selected_user["phone"])
+    selected_user["phone"] = new_phone
     save_users(users)
     print("User updated successfully!")
 
@@ -196,24 +262,15 @@ def add_users():
     """Add a new user with unique ID."""
 
     users = load_users()
-    while True:
-        name = input("Enter name: ").strip()
-        if not name:
-            print("Name cannot be empty!")
-            continue
-        break
 
-    email = get_valid_email(users)  
-    age = input_age()
-    user_id = str(uuid.uuid4())
-    users.append({
-        "id":user_id,
-        "name":name,
-        "email":email,
-        "age":age   
-    })
+    name = input_name()
+    email = input_email(users)
+    age = input_age(allow_blank=False)
+    phone = input_phone(users)
+  
+    new_user = add_users_to_list(users, name, email, age, phone)
     save_users(users)
-    print(f"User added successfully ! ID: {user_id}")
+    print(f"User added successfully ! ID: {new_user['id']}")
 
 def view_users():
     """Read and display all users from the file."""
@@ -232,6 +289,7 @@ def view_users():
         print(f"Name  : {user['name']}")
         print(f"Email : {user['email']}")
         print(f"Age   : {user['age']}")
+        print(f"Phone : {user['phone']}")
         print("-" * 44,"\n")
         count += 1
 

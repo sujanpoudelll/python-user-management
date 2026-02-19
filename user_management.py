@@ -39,14 +39,15 @@ def load_users():
         log_error(f"load_users(): {e}")
         return []
     
-def add_users_to_list(users, name, email, age, phone, role):
+def add_users_to_list(users, name, email, age, phone, role, password):
     user= {
         "id":str(uuid.uuid4()),
         "name":name,
         "email":email,
         "age":age ,
         "phone":phone,
-        "role":role
+        "role":role,
+        "password":password
     }
     users.append(user)
     return user
@@ -166,20 +167,15 @@ def input_role():
         if role in ["admin","user"]:
             return role
         print("Invalid role. Please enter 'admin' or 'user'.")
-        
-def current_role_check():
-    while True:
-        current_role = input("Enter your current role (user/admin): ").lower().strip()
-        if current_role not in ["admin","user"]:
-            print("Invalid role entered !")
-            continue
-        if current_role != "admin":
-            #print("Only admins can delete users !")
-            return False
-        return True
-      
-    
 
+def input_password():
+    while True:
+        password = input("Enter your password (min 6 characters): ").strip()  
+        if len(password) < 6:
+            print("Password must be atleast 6 characters !") 
+            continue
+        return password     
+        
 def input_display(users,action):
     """Search user by keyword and display matched results"""
     
@@ -279,21 +275,51 @@ def update_input(users,selected_user):
     save_users(users)
     print("User updated successfully!")
 
-   
+def login():
+    users = load_users()
+    
+    if not users:
+        print("No user registered. Please add admin account first !")
+        name = input_name()
+        email = input_email(users)
+        age = input_age(allow_blank=False)
+        phone = input_phone(users)
+        role = "admin"
+        password = input_password()
+    
+        new_user = add_users_to_list(users, name, email, age, phone, role, password)
+        save_users(users)
+        print(f"Admin account created successfully ! ID: {new_user['id']}")
+        return new_user
+    
+    print("***********LOGIN************\n")
+
+    
+    while True:
+        email = input("Enter your email: ").lower().strip()
+        password = input("Enter your password: ").strip()
+
+        for user in users:
+            if email == user['email'] and password == user['password']:
+                print(f"Login Successfull ! Welcome {user['name']}!")
+                return user
+            
+        print("Invalid email or password entered !\n")
+        
 #--------------Core Functions--------------------
 
 def add_users():
     """Add a new user with unique ID."""
 
     users = load_users()
-
     name = input_name()
     email = input_email(users)
     age = input_age(allow_blank=False)
     phone = input_phone(users)
     role = input_role()
+    password = input_password()
   
-    new_user = add_users_to_list(users, name, email, age, phone, role)
+    new_user = add_users_to_list(users, name, email, age, phone, role, password)
     save_users(users)
     print(f"User added successfully ! ID: {new_user['id']}")
 
@@ -336,8 +362,8 @@ def update_users():
     
 def delete_users():
     """Delete a user."""
-    if status:
-        users = load_users()
+    users = load_users()
+    if logged_in_user["role"] == "admin":
         output = input_display(users,"delete")
         if not output:
             return
@@ -346,6 +372,18 @@ def delete_users():
     else:    
         print("Only admins can delete users !")
 
+def exit_user():
+    while True:
+        exit_confirm = input("Are you sure you want to exit? (y/n): ").lower()
+        if exit_confirm == "y":
+            print("\nThank You !")
+            break
+        elif exit_confirm =="n":
+            break
+        else:
+            print("Invalid entry ! Please enter 'y' or 'n'.") 
+            continue
+        
 #--------------Main Menu----------------------
 def main_menu():       
 
@@ -359,9 +397,10 @@ def main_menu():
             print("3. SEARCH USER")
             print("4. UPDATE USER")
             print("5. DELETE USER")
-            print("6. EXIT")
+            print("6. LOGOUT")
+            print("7. EXIT")
 
-            option = int(input("Select an option (1-6): "))
+            option = int(input("Select an option (1-7): "))
             if option == 1:
                 add_users()    
             elif option == 2:
@@ -371,21 +410,15 @@ def main_menu():
             elif option == 4:
                 update_users()   
             elif option == 5:
-                delete_users()    
+                delete_users()  
             elif option == 6:
-                while True:
-                    exit_confirm = input("Are you sure you want to exit? (y/n): ").lower()
-                    if exit_confirm == "y":
-                        print("\nThank You !")
-                        return
-                    elif exit_confirm =="n":
-                        break
-                    else:
-                        print("Invalid entry ! Please enter 'y' or 'n'.") 
-                        log("main_menu(): Invalid option input.")
-                        continue
+                print("Logged out successfully !")
+                return "logout"
+            elif option == 7:
+                return "exit"
+                
             else:
-                print("Invalid option. Please choose 1, 2, 3, 4, 5, or 6.")
+                print("Invalid option. Please choose 1, 2, 3, 4, 5, 6, or 7.")
                 log("main_menu(): Invalid option input.")
                 
         except ValueError:
@@ -395,10 +428,24 @@ def main_menu():
             print("Something went wrong ! Please Try Again !")
             log_error(f"main_menu(): {e}")
 
-status = current_role_check()
-main_menu()
+if __name__ == "__main__":
+    running = True
 
+    while running:
+        logged_in_user = login()
 
+        if not logged_in_user:
+            continue
 
+        while True:
+            result = main_menu()
 
+            if result == "logout":
+                break
 
+            if result == "exit":
+                exit_user()
+                running = False
+                break
+                
+        

@@ -39,13 +39,14 @@ def load_users():
         log_error(f"load_users(): {e}")
         return []
     
-def add_users_to_list(users, name, email, age, phone):
+def add_users_to_list(users, name, email, age, phone, role):
     user= {
         "id":str(uuid.uuid4()),
         "name":name,
         "email":email,
         "age":age ,
-        "phone":phone
+        "phone":phone,
+        "role":role
     }
     users.append(user)
     return user
@@ -157,6 +158,28 @@ def get_valid_email(users,selected_user=None,allow_blank = False, current_email 
 
             return email_input.lower()
 
+def input_role():
+    while True:
+        role = input("Enter your role (user/admin): ").lower().strip()
+        if role == "":
+            return "user"
+        if role in ["admin","user"]:
+            return role
+        print("Invalid role. Please enter 'admin' or 'user'.")
+        
+def current_role_check():
+    while True:
+        current_role = input("Enter your current role (user/admin): ").lower().strip()
+        if current_role not in ["admin","user"]:
+            print("Invalid role entered !")
+            continue
+        if current_role != "admin":
+            #print("Only admins can delete users !")
+            return False
+        return True
+      
+    
+
 def input_display(users,action):
     """Search user by keyword and display matched results"""
     
@@ -184,6 +207,7 @@ def input_display(users,action):
             print(f"Email: {userfound['email']}")
             print(f"Age: {userfound['age']}")
             print(f"Phone: {userfound['phone']}")
+            print(f"Role: {userfound['role']}")
             print("-" * 44,"\n")
             count += 1
     else:
@@ -267,8 +291,9 @@ def add_users():
     email = input_email(users)
     age = input_age(allow_blank=False)
     phone = input_phone(users)
+    role = input_role()
   
-    new_user = add_users_to_list(users, name, email, age, phone)
+    new_user = add_users_to_list(users, name, email, age, phone, role)
     save_users(users)
     print(f"User added successfully ! ID: {new_user['id']}")
 
@@ -290,6 +315,7 @@ def view_users():
         print(f"Email : {user['email']}")
         print(f"Age   : {user['age']}")
         print(f"Phone : {user['phone']}")
+        print(f"Role  : {user['role']}")
         print("-" * 44,"\n")
         count += 1
 
@@ -310,13 +336,15 @@ def update_users():
     
 def delete_users():
     """Delete a user."""
-
-    users = load_users()
-    output = input_display(users,"delete")
-    if not output:
-        return
-    selected_user= choice_input(output, "delete")
-    delete_input(users,selected_user)
+    if status:
+        users = load_users()
+        output = input_display(users,"delete")
+        if not output:
+            return
+        selected_user= choice_input(output, "delete")
+        delete_input(users,selected_user)
+    else:    
+        print("Only admins can delete users !")
 
 #--------------Main Menu----------------------
 def main_menu():       
@@ -367,6 +395,7 @@ def main_menu():
             print("Something went wrong ! Please Try Again !")
             log_error(f"main_menu(): {e}")
 
+status = current_role_check()
 main_menu()
 
 

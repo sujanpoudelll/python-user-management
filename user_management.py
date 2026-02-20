@@ -5,6 +5,8 @@
 import json
 import os
 import uuid
+import hashlib
+import getpass
 
 
 #-------------Logging----------------------------
@@ -16,6 +18,9 @@ def log_error(message):
     print(f"[ERROR] {message}")
 
 #------------Helper Functions--------------------
+
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def load_users():
     """Loads users from the file"""
@@ -168,13 +173,19 @@ def input_role():
             return role
         print("Invalid role. Please enter 'admin' or 'user'.")
 
-def input_password():
+def input_password(confirm_password = False):
     while True:
-        password = input("Enter your password (min 6 characters): ").strip()  
+        password = getpass.getpass("Enter your password (min 6 characters): ").strip()  
         if len(password) < 6:
             print("Password must be atleast 6 characters !") 
             continue
-        return password     
+        if confirm_password:
+            reenter_password = getpass.getpass("Re-enter your password to confirm: ").strip()
+            if password != reenter_password:
+                print("Password do not match ! Try again !")
+                continue
+
+        return hash_password(password)     
         
 def input_display(users,action):
     """Search user by keyword and display matched results"""
@@ -285,7 +296,7 @@ def login():
         age = input_age(allow_blank=False)
         phone = input_phone(users)
         role = "admin"
-        password = input_password()
+        password = input_password(confirm_password = True)
     
         new_user = add_users_to_list(users, name, email, age, phone, role, password)
         save_users(users)
@@ -297,10 +308,10 @@ def login():
     
     while True:
         email = input("Enter your email: ").lower().strip()
-        password = input("Enter your password: ").strip()
+        password = getpass.getpass("Enter your password: ").strip()
 
         for user in users:
-            if email == user['email'] and password == user['password']:
+            if email == user['email'] and hash_password(password) == user['password']:
                 print(f"Login Successfull ! Welcome {user['name']}!")
                 return user
             
@@ -317,7 +328,7 @@ def add_users():
     age = input_age(allow_blank=False)
     phone = input_phone(users)
     role = input_role()
-    password = input_password()
+    password = input_password(confirm_password=True)
   
     new_user = add_users_to_list(users, name, email, age, phone, role, password)
     save_users(users)
@@ -360,10 +371,10 @@ def update_users():
     selected_user= choice_input(output, "update")
     update_input(users,selected_user)
     
-def delete_users():
+def delete_users(current_user):
     """Delete a user."""
     users = load_users()
-    if logged_in_user["role"] == "admin":
+    if current_user["role"] == "admin":
         output = input_display(users,"delete")
         if not output:
             return
@@ -385,7 +396,7 @@ def exit_user():
             continue
         
 #--------------Main Menu----------------------
-def main_menu():       
+def main_menu(current_user):       
 
     """Main menu loop."""
 
@@ -396,30 +407,57 @@ def main_menu():
             print("2. VIEW USERS")
             print("3. SEARCH USER")
             print("4. UPDATE USER")
-            print("5. DELETE USER")
-            print("6. LOGOUT")
-            print("7. EXIT")
+            if current_user['role'] == "admin":
+                print("5. DELETE USER")
+                print("6. LOGOUT")
+                print("7. EXIT")
 
-            option = int(input("Select an option (1-7): "))
-            if option == 1:
-                add_users()    
-            elif option == 2:
-                view_users()
-            elif option == 3:
-                search_users()
-            elif option == 4:
-                update_users()   
-            elif option == 5:
-                delete_users()  
-            elif option == 6:
-                print("Logged out successfully !")
-                return "logout"
-            elif option == 7:
-                return "exit"
-                
+                option = int(input("Select an option (1-7): "))
+
+                if option == 1:
+                    add_users()    
+                elif option == 2:
+                    view_users()
+                elif option == 3:
+                    search_users()
+                elif option == 4:
+                    update_users()   
+                elif option == 5:
+                    delete_users(current_user)  
+                elif option == 6:
+                    print("Logged out successfully !")
+                    return "logout"
+                elif option == 7:
+                    return "exit"
+                    
+                else:
+                    print("Invalid option. Please choose 1, 2, 3, 4, 5, 6, or 7.")
+                    log("main_menu(): Invalid option input.")
+
+
             else:
-                print("Invalid option. Please choose 1, 2, 3, 4, 5, 6, or 7.")
-                log("main_menu(): Invalid option input.")
+                print("5. LOGOUT")
+                print("6. EXIT")
+
+                option = int(input("Select an option (1-6): "))
+
+                if option == 1:
+                    add_users()    
+                elif option == 2:
+                    view_users()
+                elif option == 3:
+                    search_users()
+                elif option == 4:
+                    update_users()   
+                elif option == 5:
+                    print("Logged out successfully !")
+                    return "logout"
+                elif option == 6:
+                    return "exit"
+                    
+                else:
+                    print("Invalid option. Please choose 1, 2, 3, 4, 5, or 6.")
+                    log("main_menu(): Invalid option input.")
                 
         except ValueError:
             print("Please enter a valid integer.")
@@ -438,7 +476,7 @@ if __name__ == "__main__":
             continue
 
         while True:
-            result = main_menu()
+            result = main_menu(logged_in_user)
 
             if result == "logout":
                 break

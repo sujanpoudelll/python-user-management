@@ -31,7 +31,8 @@ This project was created during my Python learning journey to practice **real-wo
 - Users are now automatically **sorted by name** when displayed  
 - Added **email duplication check** when adding or updating a user  
 - Added **password hashing** to secure user credentials  
-- Added **hidden password input** while typing  
+- Added **hidden password input** while typing
+- Added **login attempt limit with temporary block**   
 - Implemented **role-based menu** visibility  
 
 ### Author

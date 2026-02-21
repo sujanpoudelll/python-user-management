@@ -7,6 +7,7 @@ import os
 import uuid
 import hashlib
 import getpass
+import time
 
 
 #-------------Logging----------------------------
@@ -305,8 +306,11 @@ def login():
     
     print("***********LOGIN************\n")
 
-    
-    while True:
+   
+    attempts = 1
+    max_attempts = 3
+    while attempts <= max_attempts:
+        
         email = input("Enter your email: ").lower().strip()
         password = getpass.getpass("Enter your password: ").strip()
 
@@ -314,9 +318,17 @@ def login():
             if email == user['email'] and hash_password(password) == user['password']:
                 print(f"Login Successfull ! Welcome {user['name']}!")
                 return user
-            
+
+         
         print("Invalid email or password entered !\n")
-        
+        print(f"Attmepts remaining:{max_attempts-attempts}")
+        log(f"Failed login attempt {attempts} for email: {email}\n")
+        attempts += 1 
+              
+    print("Too many failed attempts! Try again in 1 minute !") 
+    log_error(f"Login temporarily locked for email: {email}\n")
+    time.sleep(60)
+    return None
 #--------------Core Functions--------------------
 
 def add_users():
